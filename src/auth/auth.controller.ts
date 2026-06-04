@@ -39,11 +39,27 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('local')) // déclenche la LocalStrategy
+  @UseGuards(AuthGuard('local'))
   @ApiOperation({ summary: 'Connexion utilisateur' })
   @ApiResponse({ status: 200, description: 'Connexion réussie' })
   @ApiResponse({ status: 401, description: 'Email ou mot de passe incorrect' })
   async login(@Request() req, @Body() dto: LoginDto) {
     return this.authService.login(req.user);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Déconnexion utilisateur' })
+  @ApiResponse({ status: 200, description: 'Déconnexion réussie' })
+  @ApiResponse({ status: 401, description: 'Non autorisé' })
+  async logout(@Request() req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    await this.authService.logout(token, req.user.id);
+    return {
+      success: true,
+      message: 'Déconnexion réussie',
+    };
   }
 }
