@@ -4,10 +4,19 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @ApiTags('Authentification')
 @Controller('auth')
@@ -26,5 +35,15 @@ export class AuthController {
       message: 'Compte créé avec succès',
       data: user,
     };
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('local')) // déclenche la LocalStrategy
+  @ApiOperation({ summary: 'Connexion utilisateur' })
+  @ApiResponse({ status: 200, description: 'Connexion réussie' })
+  @ApiResponse({ status: 401, description: 'Email ou mot de passe incorrect' })
+  async login(@Request() req, @Body() dto: LoginDto) {
+    return this.authService.login(req.user);
   }
 }
