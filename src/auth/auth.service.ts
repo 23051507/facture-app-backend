@@ -11,6 +11,9 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { Inject } from '@nestjs/common';
+import { Redis } from 'ioredis';
+import { REDIS_CLIENT } from '../redis/redis.module';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +21,8 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    @Inject(REDIS_CLIENT)
+    private readonly redisClient: Redis,
   ) {}
 
   async register(dto: RegisterDto): Promise<Omit<User, 'mot_de_passe_hash'>> {
@@ -81,5 +86,24 @@ export class AuthService {
       refresh_token, // token long — pour renouveler l'access token
       user,
     };
+  }
+    async logout(token: string, userId: string): Promise<void> {
+    // Décoder le token pour récupérer son expiration
+    const decoded = this.jwtService.decode(token) as { exp: number };
+
+    if (decoded?.exp) {
+      const now = Math.floor(Date.now() / 1000); // temps actuel en secondes
+      const ttl = decoded.exp - now; // temps restant avant expiration
+
+      if (ttl > 0) {
+        // Stocker le token dans Redis jusqu'à son expiration naturelle
+        await this.redisClient.set(
+          `blacklist:${token}`,
+          userId,
+          'EX',
+          ttl,
+        );
+      }
+    }
   }
 }
