@@ -2,34 +2,32 @@ import {
   Injectable,
   ConflictException,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(dto: RegisterDto): Promise<Omit<User, 'mot_de_passe_hash'>> {
-    // Vérifier si l'email existe déjà
     const existingUser = await this.userRepository.findOne({
       where: { email: dto.email },
     });
-
     if (existingUser) {
       throw new ConflictException('Un compte avec cet email existe déjà');
     }
-
-    // Hasher le mot de passe
     const hash = await bcrypt.hash(dto.mot_de_passe, 12);
-
-    // Créer l'utilisateur
     const user = this.userRepository.create({
       nom: dto.nom,
       prenom: dto.prenom,
@@ -37,10 +35,8 @@ export class AuthService {
       mot_de_passe_hash: hash,
       role: dto.role,
     });
-
     try {
       const saved = await this.userRepository.save(user);
-      // Ne jamais retourner le hash du mot de passe
       const { mot_de_passe_hash, ...result } = saved;
       return result;
     } catch (error) {
@@ -48,5 +44,42 @@ export class AuthService {
         "Erreur lors de la création du compte",
       );
     }
+  }
+
+  // Vérifie email + mot de passe — utilisé par LocalStrategy
+  async validateUser(email: string, mot_de_passe: string) {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) return null; // utilisateur introuvable
+
+    const isMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe_hash);
+    if (!isMatch) return null; // mauvais mot de passe
+
+    const { mot_de_passe_hash, ...result } = user;
+    return result; // retourne l'user sans le hash
+  }
+
+  // Génère les tokens JWT après connexion
+  async login(user: Omit<User, 'mot_de_passe_hash'>) {
+    const payload = { sub: user.id, email: user.email, role: user.role };
+
+    const access_token = this.jwtService.sign(payload, {
+      expiresIn: '15m',
+    });
+
+    const refresh_token = this.jwtService.sign(payload, {
+      expiresIn: '30d',
+    });
+
+    // Mettre à jour la dernière connexion
+    await this.userRepository.update(user.id, {
+      derniere_connexion: new Date(),
+    });
+
+    return {
+      access_token,  // token court — pour les requêtes API
+      refresh_token, // token long — pour renouveler l'access token
+      user,
+    };
   }
 }
