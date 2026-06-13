@@ -17,6 +17,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('Authentification')
 @Controller('auth')
@@ -60,6 +62,31 @@ export class AuthController {
     return {
       success: true,
       message: 'Déconnexion réussie',
+    };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Demande de réinitialisation du mot de passe' })
+  @ApiResponse({ status: 200, description: 'OTP envoyé si email existe' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(dto.email);
+    return {
+      success: true,
+      message: 'Si cet email existe, un code de réinitialisation a été envoyé',
+    };
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Réinitialisation du mot de passe avec OTP' })
+  @ApiResponse({ status: 200, description: 'Mot de passe réinitialisé' })
+  @ApiResponse({ status: 401, description: 'OTP invalide ou expiré' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto);
+    return {
+      success: true,
+      message: 'Mot de passe réinitialisé avec succès',
     };
   }
 }
