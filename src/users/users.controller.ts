@@ -21,7 +21,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('Utilisateurs')
 @Controller('users')
-@UseGuards(AuthGuard('jwt')) // toutes les routes sont protégées
+@UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth('access-token')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

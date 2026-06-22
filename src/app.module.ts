@@ -11,6 +11,7 @@ import { DevisModule } from './devis/devis.module';
 import { FacturesModule } from './factures/factures.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ConfigEntrepriseModule } from './config/config-entreprise.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ConfigEntrepriseModule } from './config/config-entreprise.module';
     FacturesModule,
     NotificationsModule,
     ConfigEntrepriseModule,
+    CommonModule,
   ],
 })
 export class AppModule {}
