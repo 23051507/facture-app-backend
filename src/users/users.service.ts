@@ -36,10 +36,7 @@ export class UsersService {
     return result;
   }
 
-  async changePassword(
-    userId: string,
-    dto: ChangePasswordDto,
-  ): Promise<void> {
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
     const isMatch = await bcrypt.compare(
