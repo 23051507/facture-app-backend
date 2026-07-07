@@ -12,6 +12,7 @@ import { FacturesModule } from './factures/factures.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ConfigEntrepriseModule } from './config/config-entreprise.module';
 import { CommonModule } from './common/common.module';
+import { PdfModule } from './pdf/pdf.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CommonModule } from './common/common.module';
     NotificationsModule,
     ConfigEntrepriseModule,
     CommonModule,
+    PdfModule, 
   ],
 })
 export class AppModule {}
