@@ -13,6 +13,7 @@ import { User } from '../../users/entities/user.entity';
 import { Client } from '../../clients/entities/client.entity';
 import { ContactClient } from '../../clients/entities/contact-client.entity';
 import { ModeleDocument } from '../../config/entities/modele-document.entity';
+import { LigneDevis } from './ligne-devis.entity';
 
 export enum StatutDevis {
   BROUILLON = 'BROUILLON',
@@ -107,6 +108,9 @@ export class Devis {
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'created_by' })
   created_by: User;
+
+  @OneToMany(() => LigneDevis, (ligne) => ligne.devis)
+  lignes: LigneDevis[];
 
   @ApiProperty()
   @CreateDateColumn()
