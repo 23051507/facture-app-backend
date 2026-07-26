@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
@@ -13,6 +14,7 @@ import { Client } from '../../clients/entities/client.entity';
 import { ContactClient } from '../../clients/entities/contact-client.entity';
 import { ModeleDocument } from '../../config/entities/modele-document.entity';
 import { Devis } from '../../devis/entities/devis.entity';
+import { LigneFacture } from './ligne-facture.entity';
 
 export enum StatutFacture {
   BROUILLON = 'BROUILLON',
@@ -125,6 +127,9 @@ export class Facture {
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'created_by' })
   created_by: User;
+
+  @OneToMany(() => LigneFacture, (ligne) => ligne.facture)
+  lignes: LigneFacture[];
 
   @ApiProperty()
   @CreateDateColumn()
