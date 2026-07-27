@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { ContactClient } from './contact-client.entity';
 
 export enum TypeClient {
   PARTICULIER = 'PARTICULIER',
@@ -68,6 +69,9 @@ export class Client {
   @ApiProperty()
   @Column({ default: true })
   est_actif: boolean;
+
+  @OneToMany(() => ContactClient, (contact) => contact.client)
+  contacts: ContactClient[];
 
   @ApiProperty()
   @CreateDateColumn()
