@@ -7,6 +7,7 @@ import { Devis } from '../devis/entities/devis.entity';
 import { LigneDevis } from '../devis/entities/ligne-devis.entity';
 import { FacturesService } from './factures.service';
 import { FacturesController } from './factures.controller';
+import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FacturesController } from './factures.controller';
       Devis,
       LigneDevis,
     ]),
+    CommonModule,
   ],
   controllers: [FacturesController],
   providers: [FacturesService],
